@@ -284,4 +284,12 @@ class ListBenchmark {
     val result = xs.groupBy(_ % 5)
     bh.consume(result)
   }
+
+  @Benchmark
+  def isEmpty(bh: Blackhole): Unit = {
+    val isEmpty = xs.isEmpty
+    val nonEmpty = xs.nonEmpty
+    bh.consume(isEmpty)
+    bh.consume(nonEmpty)
+  }
 }

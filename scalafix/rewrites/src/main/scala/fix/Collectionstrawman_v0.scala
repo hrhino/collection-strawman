@@ -151,6 +151,9 @@ case class Collectionstrawman_v0(sctx: SemanticCtx)
             ctx.replaceToken(close, ")")).getOrElse(Patch.empty)
     }.asPatch
 
+  def `replace ListMap/ListSet constructors`(ctx: RewriteCtx) =
+    ctx.tre
+
   def rewrite(ctx: RewriteCtx): Patch = {
     replaceToList(ctx) +
       replaceSymbols(ctx) +
