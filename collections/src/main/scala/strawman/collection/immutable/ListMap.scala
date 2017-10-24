@@ -13,7 +13,7 @@ package immutable
 import collection.{Iterator, MapFactory}
 
 import scala.annotation.tailrec
-import scala.{Any, AnyRef, Array, Boolean, Int, None, NoSuchElementException, Nothing, Option, SerialVersionUID, Serializable, Some, sys, throws}
+import scala.{Any, AnyRef, Array, Boolean, Int, None, NoSuchElementException, Nothing, Option, SerialVersionUID, Serializable, Some, sys, `inline`, throws}
 import java.lang.Integer
 
 import strawman.collection.mutable.{Builder, ImmutableBuilder}
@@ -43,7 +43,7 @@ import strawman.collection.mutable.{Builder, ImmutableBuilder}
   * @define willNotTerminateInf
   */
 @SerialVersionUID(301002838095710379L)
-sealed class ListMap[K, +V]
+sealed abstract class ListMap[K, +V]
   extends Map[K, V]
     with MapOps[K, V, ListMap, ListMap[K, V]]
     with StrictOptimizedIterableOps[(K, V), Iterable, ListMap[K, V]]
@@ -62,7 +62,8 @@ sealed class ListMap[K, +V]
 
   override def size: Int = 0
 
-  override def isEmpty: Boolean = true
+  @`inline` override final def isEmpty: Boolean  = this eq ListMap.EmptyListMap
+  @`inline` override final def nonEmpty: Boolean = this ne ListMap.EmptyListMap
 
   def get(key: K): Option[V] = None
 
@@ -90,16 +91,14 @@ sealed class ListMap[K, +V]
     * Represents an entry in the `ListMap`.
     */
   @SerialVersionUID(-6453056603889598734L)
-  protected class Node[V1 >: V](override protected val key: K,
-                                override protected val value: V1) extends ListMap[K, V1] with Serializable {
+  protected final class Node[V1 >: V](override protected val key: K,
+                                      override protected val value: V1) extends ListMap[K, V1] with Serializable {
 
     override def size: Int = sizeInternal(this, 0)
 
     @tailrec private[this] def sizeInternal(cur: ListMap[K, V1], acc: Int): Int =
       if (cur.isEmpty) acc
       else sizeInternal(cur.next, acc + 1)
-
-    override def isEmpty: Boolean = false
 
     @throws[NoSuchElementException]
     override def apply(k: K): V1 = applyInternal(this, k)

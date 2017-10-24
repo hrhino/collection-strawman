@@ -5,7 +5,7 @@ package immutable
 import mutable.{Builder, ImmutableBuilder}
 
 import scala.annotation.tailrec
-import scala.{Any, Boolean, Int, NoSuchElementException, SerialVersionUID, Serializable}
+import scala.{Any, Boolean, Int, NoSuchElementException, SerialVersionUID, `inline`, Serializable}
 
 /**
   * This class implements immutable sets using a list-based data structure. List set iterators and
@@ -30,14 +30,15 @@ import scala.{Any, Boolean, Int, NoSuchElementException, SerialVersionUID, Seria
   * @define willNotTerminateInf
   */
 @SerialVersionUID(-8417059026623606218L)
-sealed class ListSet[A]
+sealed abstract class ListSet[A]
   extends Set[A]
     with SetOps[A, ListSet, ListSet[A]]
     with StrictOptimizedIterableOps[A, ListSet, ListSet[A]]
     with Serializable {
 
   override def size: Int = 0
-  override def isEmpty: Boolean = true
+  @`inline` override final def isEmpty: Boolean  = this eq ListSet.EmptyListSet
+  @`inline` override final def nonEmpty: Boolean = this ne ListSet.EmptyListSet
 
   def contains(elem: A): Boolean = false
 
@@ -70,15 +71,13 @@ sealed class ListSet[A]
     * Represents an entry in the `ListSet`.
     */
   @SerialVersionUID(-787710309854855049L)
-  protected class Node(override protected val elem: A) extends ListSet[A] with Serializable {
+  protected final class Node(override protected val elem: A) extends ListSet[A] with Serializable {
 
     override def size = sizeInternal(this, 0)
 
     @tailrec private[this] def sizeInternal(n: ListSet[A], acc: Int): Int =
       if (n.isEmpty) acc
       else sizeInternal(n.next, acc + 1)
-
-    override def isEmpty: Boolean = false
 
     override def contains(e: A) = containsInternal(this, e)
 

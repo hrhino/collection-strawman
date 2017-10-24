@@ -84,6 +84,10 @@ sealed trait List[+A]
 
   protected[this] def newSpecificBuilder() = List.newBuilder[A]()
 
+  @`inline` override final def isEmpty: Boolean = this eq Nil
+
+  @`inline` override final def nonEmpty: Boolean = this ne Nil
+
   /** Adds an element at the beginning of this list.
     *  @param elem the element to prepend.
     *  @return  a list which contains `x` as first element and
@@ -347,17 +351,12 @@ sealed trait List[+A]
   override def className = "List"
 }
 
-case class :: [+A](x: A, private[collection] var next: List[A @uncheckedVariance]) // sound because `next` is used only locally
-  extends List[A] {
-  override def isEmpty: Boolean = false
-  override def nonEmpty: Boolean = true
-  override def head: A = x
+final case class :: [+A](override val head: A,
+                         private[collection] var next: List[A @uncheckedVariance]) extends List[A] { // sound because `next` is used only locally
   override def tail: List[A] = next
 }
 
 case object Nil extends List[Nothing] {
-  override def isEmpty: Boolean = true
-  override def nonEmpty: Boolean = false
   override def head: Nothing = throw new NoSuchElementException("head of empty list")
   override def tail: Nothing = throw new UnsupportedOperationException("tail of empty list")
   override def last: Nothing = throw new NoSuchElementException("last of empty list")
